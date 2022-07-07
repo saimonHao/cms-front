@@ -6,7 +6,7 @@ type Config = {
 
 const dev = {
 	env: 'dev',
-	apiHost: 'https://api-dev-mai.tvb.com',
+	apiHost: 'http://192.168.11.236:8080',
 	cmsTag: `DEV ${process.env.REACT_APP_CMS_TAG}`,
 };
 
@@ -31,4 +31,4 @@ const env = (): Config => {
 	return dev;
 };
 
-export default env;
+export default env();

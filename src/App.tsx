@@ -44,7 +44,7 @@ const App = (): JSX.Element => {
 					/>
 				);
 			})}
-			<Route exact path="/" component={() => <Redirect to="/welcome" />} />
+			<Route exact path="/" component={() => <Redirect to="/login" />} />
 		</Switch>
 	);
 };

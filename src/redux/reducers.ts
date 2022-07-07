@@ -1,9 +1,8 @@
 import CommonReducer from 'redux/reducer/common';
-import LoginFormReducer from 'pages/Public/Login/Login.slice';
-
+import LoginReducer from 'redux/reducer/auth/login.slice';
 const reducers = {
 	common: CommonReducer,
-	loginForm: LoginFormReducer,
+	login: LoginReducer
 };
 
 export default reducers;
