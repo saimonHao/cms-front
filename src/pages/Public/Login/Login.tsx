@@ -6,7 +6,7 @@ import { Input, Field, Form } from '@availity/form';
 import * as yup from 'yup';
 import '@availity/yup';
 import { useAppDispatch, useAppSelector } from 'redux/hooks';
-import { loginActions } from 'redux/reducer/auth/login.actions';
+import { loginActions } from 'redux/reducer/login/login.actions';
 
 //* Import css modules if need
 // import classes from './LoginForm.module.scss';
@@ -16,13 +16,15 @@ interface Props {
 }
 
 const Login = (props): JSX.Element => {
+
 	const dispatch = useAppDispatch();
 	const error = useAppSelector(state => state.login.error)
+	console.log(error);
 	const history = useHistory();
 	const handleValidSubmit = (values) => {
 		const { email, password } = values;
-		dispatch({ type: loginActions.LOGIN_USER, email,password })
-		history.push('/welcome');
+		dispatch({ type: 'LOGIN_REQUESTED', email, password })
+		// history.push('/welcome');
 	}
 	return (
 		<div className="account-pages my-5 pt-sm-5">
@@ -42,15 +44,15 @@ const Login = (props): JSX.Element => {
 								</Row>
 							</div>
 							<CardBody className="pt-0">
-								<div>
+								{/* <div>
 									<Link to="/" className="auth-logo-light">
 										<div className="avatar-md profile-user-wid mb-4">
 											<span className="avatar-title rounded-circle bg-light">
-												{/* <img src={logo} alt="" className="rounded-circle" height="34" /> */}
+												<img src={logo} alt="" className="rounded-circle" height="34" />
 											</span>
 										</div>
 									</Link>
-								</div>
+								</div> */}
 								<div className="p-2">
 									<Form onSubmit={(values) => { handleValidSubmit(values) }}
 										initialValues={{
@@ -71,6 +73,7 @@ const Login = (props): JSX.Element => {
 											// ),
 										})}
 									>
+										{error ? <Alert color="danger">{error}</Alert> : null}
 										<Field name="email" type="text" label="Email" />
 										<Field name="password" type="text" label="password" />
 										<div className="mt-3 d-grid">
