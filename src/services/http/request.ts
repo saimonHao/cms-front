@@ -23,7 +23,8 @@ export const post = async (url, params: any, options: any = {}) => {
     const res = await request(url, { headers, method, body, ...options });
     return res;
 }
-export const get = async (url, params: any, options: any = {}) => {
+export const get = async (url, options: any = {}) => {
+    console.log("url===",url);
     let method = "GET";
     let headers = {
         "Content-Type": "application/json",
@@ -34,3 +35,13 @@ export const get = async (url, params: any, options: any = {}) => {
     const res = await request(url, { headers, method, ...options });
     return res;
 }
+export const del = async (url, options: any = {}) => {
+    const method = "DELETE";
+    const headers = {
+    //   dmp_token: `${token}`,
+    //   user_id: `${userId}`,
+      ...options.headers,
+    };
+    const res = await request(url, { method, ...options, headers });
+    return res;
+  };

@@ -1,259 +1,317 @@
 import React, { useEffect, useState } from "react"
-import { Row, Col, Card, CardBody, CardTitle } from "reactstrap"
+import { Modal, Row, Col, Card, CardBody, UncontrolledTooltip, Button } from "reactstrap"
 import MetaTags from 'react-meta-tags'
-
-// datatable related plugins
-import BootstrapTable from 'react-bootstrap-table-next';
-import paginationFactory, {
-    PaginationProvider, PaginationListStandalone,
-    SizePerPageDropdownStandalone
-} from 'react-bootstrap-table2-paginator';
-
-import ToolkitProvider, { Search } from 'react-bootstrap-table2-toolkit';
-
 //Import Breadcrumb
 import Breadcrumbs from "../../../components/Common/Breadcrumb"
-import "../../../styles/datatables.scss"
 import { useAppDispatch, useAppSelector } from "redux/hooks";
 import { userActions } from "redux/reducer/user/user.actions";
+import RemoteDataTable from "components/RemoteDataTable/RemoteDataTable";
+import moment from 'moment';
+import { Link } from "react-router-dom";
+import SearchInput from "components/SearchInput/SearchInput";
+import SweetAlert from "react-bootstrap-sweetalert";
+
+import { Input, Field, Form } from '@availity/form';
+import * as yup from 'yup';
+import '@availity/yup';
+import PageLoadingView from "components/PageLoadingView/PageLoadingView";
+import { promiseDispatch } from "utils/commonRedux";
 
 const UserList = () => {
-
-    const users = useAppSelector(state => state.user.users);
-    console.log(users);
     const dispatch = useAppDispatch();
+    const { users, total, error } = useAppSelector(state => ({
+        users: state.user.users,
+        total: state.user.total,
+        error: state.user.error
+    }));
+
+    console.log(users,total);
+
+    const [userData, setUserData] = useState([]);
+    const [totalCount,setTotalCount] = useState(0);
     const [page, setPage] = useState(1);
     const [sizePerPage, setSizePerPage] = useState(10);
+    const [sortField, setSortField] = useState('id');
+    const [sortOrder, setSortOrder] = useState('desc');
+    const [loaded, setLoaded] = useState(false);
+
+    const [searchKey, setSearchKey] = useState("");
+    const [modal_add, setModal_add] = useState(false)
+
+    const [successAlert, setSuccessAlert] = useState("");
+    const [errAlert, setErrAlert] = useState("");
+
+
 
     useEffect(() => {
+        setLoaded(false)
         dispatch({ type: userActions.FETCH_USERS, page, sizePerPage })
-    }, [])
+    }, [dispatch, page, sizePerPage])
+
+    useEffect(() => {
+        if (users) {
+            setLoaded(true);
+            setUserData(setRows(users));
+            setTotalCount(total);
+        }
+    }, [users]);
+
+    const setRows = (list: any = []) => {
+        return list.map((item, index) => {
+            return {
+                id: item.id,
+                name: item.name,
+                email: item.email,
+                createTime: moment(item.createTime).format("YYYY-MM-DD HH:mm:ss"),
+                act: (
+                    <div>
+                        <Link
+                            to="#"
+                            className="mr-3 text-primary"
+                        // onClick={() => {
+                        //   toggle_edit(item);
+                        // }}
+                        >
+                            <i
+                                className="fas fa-pencil-alt text-success mr-1"
+                                id="edittooltip"
+                            ></i>
+                            <UncontrolledTooltip placement="top" target="edittooltip">
+                                Edit
+                            </UncontrolledTooltip>
+                        </Link>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <Link
+                            to="#"
+                            className="mr-3 text-danger"
+                            onClick={() => {
+                                toggle_del(item);
+                            }}
+                        >
+                            <i
+                                className="fas fa-trash-alt text-danger mr-1"
+                                id="deltooltip"
+                            ></i>
+                            <UncontrolledTooltip placement="top" target="deltooltip">
+                                Delete
+                            </UncontrolledTooltip>
+                        </Link>
+                    </div>
+                )
+            }
+        })
+    }
 
     const columns = [{
         dataField: 'id',
         text: 'Id',
         sort: true,
+        onSort: (field, order) => {
+            setSortOrder(order);
+            setSortField(field);
+        },
     }, {
         dataField: 'name',
         text: 'Name',
         sort: true
     }, {
-        dataField: 'position',
-        text: 'Position',
+        dataField: 'email',
+        text: 'Email',
         sort: true
     }, {
-        dataField: 'office',
-        text: 'Office',
+        dataField: 'createTime',
+        text: 'Create Time',
         sort: true
     }, {
-        dataField: 'age',
-        text: 'Age',
-        sort: true
-    }, {
-        dataField: 'startdate',
-        text: 'Start Date',
-        sort: true
-    }, {
-        dataField: 'salary',
-        text: 'Salary',
-        sort: true
-    }, {
-        dataField: 'Action',
+        dataField: 'act',
         text: 'Action',
         sort: true,
     }];
-
-    // Table Data
-    const productData = [
-        { "id": 1, "name": "Airi Satou", "position": "Accountant", "office": "Tokyo", "age": "33", "startdate": "2008/11/28", "salary": "$162,700" },
-
-        { "id": 2, "name": "Angelica Ramos", "position": "Chief Executive Officer (CEO)", "office": "London", "age": "47", "startdate": "2009/10/09", "salary": "$1,200,000" },
-
-        { "id": 3, "name": "Ashton Cox", "position": "Junior Technical Author", "office": "San Francisco", "age": "66", "startdate": "2009/01/12", "salary": "$86,000" },
-
-        { "id": 4, "name": "Bradley Greer", "position": "Software Engineer", "office": "London", "age": "41", "startdate": "2012/10/13", "salary": "$132,000" },
-
-        { "id": 5, "name": "Brenden Wagner", "position": "Software Engineer", "office": "San Francisco", "age": "28", "startdate": "2011/06/07", "salary": "$206,850" },
-
-        { "id": 6, "name": "Brielle Williamson", "position": "Integration Specialist", "office": "New York", "age": "61", "startdate": "2012/12/02", "salary": "$372,000" },
-
-        { "id": 7, "name": "Bruno Nash", "position": "Software Engineer", "office": "London", "age": "38", "startdate": "2011/05/03", "salary": "$163,500" },
-
-        { "id": 8, "name": "Caesar Vance", "position": "Pre-Sales Support", "office": "New York", "age": "21", "startdate": "2011/12/12", "salary": "$106,450" },
-
-        { "id": 9, "name": "Cara Stevens", "position": "Sales Assistant", "office": "New York", "age": "46", "startdate": "2011/12/06", "salary": "$145,600" },
-
-        { "id": 10, "name": "Cedric Kelly", "position": "Senior Javascript Developer", "office": "Edinburgh", "age": "22", "startdate": "2012/03/29", "salary": "$433,060" },
-
-        { "id": 11, "name": "Marshall", "position": "Regional Director", "office": "San Francisco", "age": "36", "startdate": "2008/10/16", "salary": "$470,600" },
-
-        { "id": 12, "name": "Hurst", "position": "Javascript Developer", "office": "San Francisco", "age": "39", "startdate": "2009/09/15", "salary": "$205,500" },
-
-        { "id": 13, "name": "Rios", "position": "Personnel Lead", "office": "Edinburgh", "age": "35", "startdate": "2012/09/26", "salary": "$217,500" },
-
-        { "id": 14, "name": "Snider", "position": "Customer Support", "office": "New York", "age": "27", "startdate": "2011/01/25", "salary": "$112,000" },
-
-        { "id": 15, "name": "Wilder", "position": "Sales Assistant", "office": "Sidney", "age": "23", "startdate": "2010/09/20", "salary": "$85,600" },
-
-        { "id": 16, "name": "Camacho", "position": "Support Engineer", "office": "San Francisco", "age": "47", "startdate": "2009/07/07", "salary": "$87,500" },
-
-        { "id": 17, "name": "Green", "position": "Chief Operating Officer (COO)", "office": "San Francisco", "age": "48", "startdate": "2010/03/11", "salary": "$850,000" },
-
-        { "id": 18, "name": "Winters", "position": "Accountant", "office": "Tokyo", "age": "63", "startdate": "2011/07/25", "salary": "$170,750" },
-
-        { "id": 19, "name": "Cortez", "position": "Team Leader", "office": "San Francisco", "age": "22", "startdate": "2008/10/26", "salary": "$235,500" },
-
-        { "id": 20, "name": "Joyce", "position": "Developer", "office": "Edinburgh", "age": "42", "startdate": "2010/12/22", "salary": "$92,575" },
-
-        { "id": 21, "name": "Gloria Little", "position": "Systems Administrator", "office": "New York", "age": "59", "startdate": "2009/04/10", "salary": "$237,500" },
-
-        { "id": 22, "name": "Haley Kennedy", "position": "Senior Marketing Desi,ner", "office": "London", "age": "43", "startdate": "2012/12/18", "salary": "$313,500" },
-
-        { "id": 23, "name": "Hermione Butler", "position": "Regional Director", "office": "London", "age": "47", "startdate": "2011/03/21", "salary": "$356,250" },
-
-        { "id": 24, "name": "Herrod Chandler", "position": "Sales Assistant", "office": "San Francisco", "age": "59", "startdate": "2012/08/06", "salary": "$137,500" },
-
-        { "id": 25, "name": "Hope Fuentes", "position": "Secretary", "office": "San Francisco", "age": "41", "startdate": "2010/02/12", "salary": "$109,850" },
-
-        { "id": 26, "name": "Howard Hatfield", "position": "Office Manager", "office": "San Francisco", "age": "51", "startdate": "2008/12/16", "salary": "$164,500" },
-
-        { "id": 27, "name": "Jackson Bradshaw", "position": "Director", "office": "New York", "age": "65", "startdate": "2008/09/26", "salary": "$645,750" },
-
-        { "id": 28, "name": "Jena Gaines", "position": "Office Manager", "office": "London", "age": "30", "startdate": "2008/12/19", "salary": "$90,560" },
-
-        { "id": 29, "name": "Jenette Caldwell", "position": "Development Lead", "office": "New York", "age": "30", "startdate": "2011/09/03", "salary": "$345,000" },
-
-        { "id": 30, "name": "Jennifer Acosta", "position": "Junior Javascript Devel,per", "office": "Edinburgh", "age": "43", "startdate": "2013/02/01", "salary": "$75,650" }
-
-    ];
-
-    const defaultSorted = [{
-        dataField: 'id',
-        order: 'asc'
-    }];
-
-    const pageOptions = {
-        sizePerPage: 10,
-        totalSize: productData.length, // replace later with size(customers),
-        custom: true,
+    const onPageChange = (page, sizePerPage) => {
+        setPage(page);
+    }
+    const onSizePerPageChange = (page, sizePerPage) => {
+        setPage(1);
+        setSizePerPage(page);
     }
 
-    // Custom Pagination Toggle
-    const sizePerPageList = [
-        { text: '5', value: 5 },
-        { text: '10', value: 10 },
-        { text: '15', value: 15 },
-        { text: '20', value: 20 },
-        { text: '25', value: 25 },
-        { text: 'All', value: (productData).length }];
-
-
-    // Select All Button operation
-    const selectRow = {
-        mode: 'checkbox'
+    const handleSearch = (e) => {
+        if (e.keyCode === 13) {
+            setSearchKey(e.target.value);
+            setPage(1);
+        }
+    }
+    const handleAddNew = () => {
+        toggle_add();
     }
 
-    const { SearchBar } = Search;
-
+    const toggle_add = () => {
+        setModal_add(!modal_add)
+    }
+    const showSuccessAlert = (msg) => {
+        setSuccessAlert(msg);
+    }
+    const showErrorAlert = (msg) => {
+        setErrAlert(msg);
+    }
+    const handleValidSubmit = async (values) => {
+        const { name, email, password } = values;
+        try {
+            const res: any = await promiseDispatch(dispatch, {
+                type: userActions.ADD_USER,
+                name, email, password
+            });
+            if (res && res.data.code === 200) {
+                showSuccessAlert(res.data.message);
+            } else {
+                showErrorAlert(res.data.message);
+            }
+        } catch (error: any) {
+            showErrorAlert(error.message);
+        }
+    }
+    const handleConfirm = () => {
+        setSuccessAlert("");
+        setLoaded(false);
+        setModal_add(false);
+        dispatch({ type: userActions.FETCH_USERS })
+    };
+    const toggle_del = async (item) => {
+        try {
+            const res: any = await promiseDispatch(dispatch, {
+                type: userActions.DEL_USER,
+                delId:item.id
+            });
+            if (res && res.data.code === 200) {
+                showSuccessAlert(res.data.message);
+            } else {
+                showErrorAlert(res.data.message);
+            }
+        } catch (error: any) {
+            showErrorAlert(error.message);
+        }
+    }
+    if (!loaded) {
+        return <PageLoadingView />;
+    }
     return (
         <React.Fragment>
             <div className="page-content">
                 <MetaTags>
-                    <title>Data Tables | Skote - React Admin & Dashboard Template</title>
+                    <title>User Tables | User Management & User List</title>
                 </MetaTags>
                 <div className="container-fluid">
                     <Breadcrumbs title="User Management" breadcrumbItem="User List" />
-
                     <Row>
                         <Col className="col-12">
                             <Card>
                                 <CardBody>
-                                    {/* <CardTitle className="h4">Default Datatable </CardTitle>
-                                    <p className="card-title-desc">
-                                        react-bootstrap-table-next plugin has most features enabled by default,
-                                        so all you need to do to use it with your own tables is to
-                                        call the construction function:{" "}
-                                        <code>react-bootstrap-table-next </code>.
-                                    </p> */}
-                                    <PaginationProvider
-                                        pagination={paginationFactory(pageOptions)}
-                                        keyField='id'
+                                    <Row>
+                                        <Col md={4}>
+                                            <SearchInput
+                                                searchKey={searchKey}
+                                                handleSearch={handleSearch}
+                                            />
+                                        </Col>
+                                        <Col sm="8">
+                                            <div className="text-sm-end">
+                                                <Button
+                                                    type="button"
+                                                    color="success"
+                                                    className="btn-rounded  mb-2 me-2"
+                                                    onClick={handleAddNew}
+                                                >
+                                                    <i className="mdi mdi-plus me-1" />
+                                                    Add New
+                                                </Button>
+                                            </div>
+                                        </Col>
+                                    </Row>
+                                    <RemoteDataTable
+                                        keyField="id"
                                         columns={columns}
-                                        data={productData}
-                                    >
-                                        {({ paginationProps, paginationTableProps }) => (
-                                            <ToolkitProvider
-                                                keyField='id'
-                                                columns={columns}
-                                                data={productData}
-                                                search
-                                            >
-                                                {toolkitProps => (
-                                                    <React.Fragment>
-
-                                                        <Row className="mb-2">
-                                                            <Col md="4">
-                                                                <div className="search-box me-2 mb-2 d-inline-block">
-                                                                    <div className="position-relative">
-                                                                        <SearchBar
-                                                                            {...toolkitProps.searchProps}
-                                                                        />
-                                                                        <i className="bx bx-search-alt search-icon" />
-                                                                    </div>
-                                                                </div>
-                                                            </Col>
-                                                        </Row>
-
-                                                        <Row>
-                                                            <Col xl="12">
-                                                                <div className="table-responsive">
-                                                                    <BootstrapTable
-                                                                        keyField={"id"}
-                                                                        responsive
-                                                                        bordered={false}
-                                                                        striped={false}
-                                                                        defaultSorted={defaultSorted}
-                                                                        selectRow={selectRow}
-                                                                        classes={
-                                                                            "table align-middle table-nowrap"
-                                                                        }
-                                                                        headerWrapperClasses={"thead-light"}
-                                                                        {...toolkitProps.baseProps}
-                                                                        {...paginationTableProps}
-                                                                    />
-
-                                                                </div>
-                                                            </Col>
-                                                        </Row>
-
-                                                        <Row className="align-items-md-center mt-30">
-                                                            <Col className="inner-custom-pagination d-flex">
-                                                                <div className="d-inline">
-                                                                    <SizePerPageDropdownStandalone
-                                                                        {...paginationProps}
-                                                                    />
-                                                                </div>
-                                                                <div className="text-md-right ms-auto">
-                                                                    <PaginationListStandalone
-                                                                        {...paginationProps}
-                                                                    />
-                                                                </div>
-                                                            </Col>
-                                                        </Row>
-                                                    </React.Fragment>
-                                                )
-                                                }
-                                            </ToolkitProvider>
-                                        )
-                                        }</PaginationProvider>
-
+                                        data={userData}
+                                        sortOrder={sortOrder}
+                                        sortField={sortField}
+                                        totalSize={totalCount}
+                                        page={page}
+                                        sizePerPage={sizePerPage}
+                                        onPageChange={onPageChange}
+                                        onSizePerPageChange={onSizePerPageChange}
+                                    />
                                 </CardBody>
                             </Card>
                         </Col>
                     </Row>
                 </div>
+                <Modal
+                    isOpen={modal_add}
+                    toggle={() => {
+                        toggle_add()
+                    }}
+                >
+                    <div className="modal-header">
+                        <h5 className="modal-title" id="staticBackdropLabel">New User</h5>
+                        <button type="button" className="btn-close"
+                            onClick={() => {
+                                setModal_add(false)
+                            }} aria-label="Close"></button>
+                    </div>
+                    <Form onSubmit={(values) => { handleValidSubmit(values) }}
+                        initialValues={{
+                            name: '',
+                            email: '',
+                            password: '',
+                        }}
+                        validationSchema={yup.object().shape({
+                            name: yup
+                                .string()
+                                .isRequired(true, 'Email is Required.'),
+                            email: yup
+                                .string()
+                                .isRequired(true, 'Email is Required.'),
+                            // .matches(/^\d{8}$/, 'Member ID must be 8 digits.'),
+                            password: yup
+                                .string()
+                                .isRequired(true, 'Password is Required.')
+                            // .matches(
+                            // 	/^\d{5}(?:-\d{4})?$/,
+                            // 	'Valid Zip Code Formats: 12345 or 12345-6789'
+                            // ),
+                        })}
+                    >
+                        <div className="modal-body">
+
+
+                            <Field name="name" type="text" label="Name" />
+                            <Field name="email" type="text" label="Email" />
+                            <Field name="password" type="text" label="password" />
+
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-light" onClick={() => {
+                                setModal_add(false)
+                            }}>Close</button>
+                            <button type="submit" className="btn btn-primary" >Submit</button>
+                        </div>
+                    </Form>
+                </Modal>
             </div>
-        </React.Fragment>
+            {successAlert !== "" ? (
+                <SweetAlert
+                    success
+                    title={successAlert}
+                    // onConfirm={() => {
+                    //   setSuccessAlert("");
+                    //   history.push("/user");
+                    // }}
+                    onConfirm={handleConfirm}
+                />
+            ) : null}
+            {errAlert !== "" ? (
+                <SweetAlert error title={errAlert} onConfirm={() => setErrAlert("")} />
+            ) : null}
+        </React.Fragment >
     )
 }
 

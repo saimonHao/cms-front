@@ -3,9 +3,10 @@ import { publicRoutes, authenticatedRoutes } from 'routes/menu';
 import { Switch, Route, Redirect, RouteProps, RouteChildrenProps } from 'react-router-dom';
 import AuthLayout from 'layout/AuthLayout';
 
-import '@fontsource/poppins';
-import 'assets/skote/app.scss';
-import 'styles/global.scss';
+import "@fontsource/poppins";
+import "assets/skote/app.scss";
+import "styles/global.scss";
+import './assets/skote/datatables.scss'
 
 const App = (): JSX.Element => {
 	return (
