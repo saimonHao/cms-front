@@ -5,6 +5,7 @@ import UserList from 'pages/Auth/User/UserList';
 //* Public Pages
 import Login from 'pages/Public/Login/Login';
 import Logout from 'pages/Public/Logout/Logout';
+import RoleList from 'pages/Auth/Role/RoleList';
 
 const publicRoutes = [
 	{
@@ -25,6 +26,10 @@ const authenticatedRoutes = [
 	{
 		path: '/user',
 		component: UserList,
+	},
+	{
+		path: '/role',
+		component: RoleList,
 	},
 ];
 

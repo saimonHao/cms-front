@@ -6,4 +6,5 @@ export const userActions = {
     ADD_USER_SUCCESSED: "ADD_USER_SUCCESSED",
     ADD_USER_FAILED: "ADD_USER_FAILED",
     DEL_USER: "DEL_USER",
+    UPDATE_USER: "UPDATE_USER",
 }

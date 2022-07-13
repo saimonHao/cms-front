@@ -5,9 +5,9 @@ import { userActions } from "./user.actions";
 import { fetchUsersSuccessed, fetchUsersFailed, addUserSuccessed, addUserFailed } from "./user.slice";
 
 function* fetchUsers(payload) {
-    const { page, sizePerPage } = payload;
+    const { page, sizePerPage, searchKey } = payload;
     try {
-        const res = yield call(API.user.fetchUserData, { page, sizePerPage });
+        const res = yield call(API.user.fetchUserData, { page, sizePerPage, searchKey });
         if (res.data.code === 200) {
             yield put(fetchUsersSuccessed(res));
         }
@@ -43,9 +43,23 @@ function* delUser(payload) {
         // yield put(addUserFailed(error.message))
     }
 }
+function* updateUser(payload) {
+    const { name, upId, callback } = payload;
+    try {
+        const res = yield call(API.user.updateUser, { name, upId });
+        if (res.data.code === 200) {
+            callback && callback(res);
+            // yield put(addUserSuccessed(res));
+        }
+    } catch (error: any) {
+        console.log("call create user error ", error.message);
+        // yield put(addUserFailed(error.message))
+    }
+}
 export default function* userSaga() {
     yield takeEvery(userActions.FETCH_USERS, fetchUsers);
     yield takeEvery(userActions.ADD_USER, newUser);
     yield takeEvery(userActions.DEL_USER, delUser);
+    yield takeEvery(userActions.UPDATE_USER, updateUser);
 
 }

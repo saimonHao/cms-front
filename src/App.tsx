@@ -31,7 +31,7 @@ const App = (): JSX.Element => {
 						path={path}
 						render={(props: RouteProps & RouteChildrenProps) => {
 							console.log(props);
-							if (!localStorage.getItem('authUser')) {
+							if (!localStorage.getItem('authId')) {
 								return <Redirect to={{ pathname: '/login', state: { from: props.location } }} />;
 							}
 							return (

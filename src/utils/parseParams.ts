@@ -1,12 +1,11 @@
 export const parseParams = (params) => {
-    console.log(params);
     let tempParams: any = [];
     for (let i in params) {
-        if (`${params[i] === ""}` || `${params[i]} === undifined`) {
+        if (`${params[i]}` === "" || `${params[i]}` === 'undefined') {
             continue;
         }
         tempParams.push(`${i}=${params[i]}`);
     }
-    tempParams.join('&');
+    tempParams = tempParams.join('&');
     return tempParams;
 }

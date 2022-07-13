@@ -115,6 +115,9 @@ const SidebarContent = (): JSX.Element => {
 								<li>
 									<Link to="/user">{'User List'}</Link>
 								</li>
+								<li>
+									<Link to="/role">{'Role List'}</Link>
+								</li>
 							</ul>
 						</li>
 

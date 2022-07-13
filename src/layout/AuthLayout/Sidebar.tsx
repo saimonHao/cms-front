@@ -9,7 +9,7 @@ const Sidebar = (): JSX.Element => {
 				<div className="navbar-brand-box">
 					<Link to="/" className="logo logo-light" style={{ color: 'white' }}>
 						<span className="logo-sm">CMS</span>
-						<span className="logo-lg">CMS Starter</span>
+						<span className="logo-lg">CMS FRONTED</span>
 					</Link>
 				</div>
 				<div data-simplebar className="h-100">

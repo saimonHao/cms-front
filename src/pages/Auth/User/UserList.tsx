@@ -24,11 +24,8 @@ const UserList = () => {
         total: state.user.total,
         error: state.user.error
     }));
-
-    console.log(users,total);
-
     const [userData, setUserData] = useState([]);
-    const [totalCount,setTotalCount] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
     const [page, setPage] = useState(1);
     const [sizePerPage, setSizePerPage] = useState(10);
     const [sortField, setSortField] = useState('id');
@@ -41,12 +38,17 @@ const UserList = () => {
     const [successAlert, setSuccessAlert] = useState("");
     const [errAlert, setErrAlert] = useState("");
 
+    const [isEdit, setIsEdit] = useState(false);
+    const [user, setUser] = useState<any>({});
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+
 
 
     useEffect(() => {
         setLoaded(false)
-        dispatch({ type: userActions.FETCH_USERS, page, sizePerPage })
-    }, [dispatch, page, sizePerPage])
+        dispatch({ type: userActions.FETCH_USERS, page, sizePerPage, searchKey })
+    }, [dispatch, page, sizePerPage, searchKey])
 
     useEffect(() => {
         if (users) {
@@ -68,9 +70,9 @@ const UserList = () => {
                         <Link
                             to="#"
                             className="mr-3 text-primary"
-                        // onClick={() => {
-                        //   toggle_edit(item);
-                        // }}
+                            onClick={() => {
+                                toggle_edit(item);
+                            }}
                         >
                             <i
                                 className="fas fa-pencil-alt text-success mr-1"
@@ -101,11 +103,11 @@ const UserList = () => {
             }
         })
     }
-
     const columns = [{
         dataField: 'id',
         text: 'Id',
         sort: true,
+        hidden:true,
         onSort: (field, order) => {
             setSortOrder(order);
             setSortField(field);
@@ -144,8 +146,14 @@ const UserList = () => {
     const handleAddNew = () => {
         toggle_add();
     }
-
+    const toggle_edit = (item) => {
+        console.log(item);
+        setUser(item);
+        setIsEdit(true);
+        setModal_add(!modal_add)
+    }
     const toggle_add = () => {
+        setIsEdit(false);
         setModal_add(!modal_add)
     }
     const showSuccessAlert = (msg) => {
@@ -155,32 +163,51 @@ const UserList = () => {
         setErrAlert(msg);
     }
     const handleValidSubmit = async (values) => {
-        const { name, email, password } = values;
-        try {
-            const res: any = await promiseDispatch(dispatch, {
-                type: userActions.ADD_USER,
-                name, email, password
-            });
-            if (res && res.data.code === 200) {
-                showSuccessAlert(res.data.message);
-            } else {
-                showErrorAlert(res.data.message);
+        if (isEdit) {
+            try {
+                const res: any = await promiseDispatch(dispatch, {
+                    type: userActions.UPDATE_USER,
+                    name,
+                    upId: user.id
+                });
+                if (res && res.data.code === 200) {
+                    showSuccessAlert(res.data.message);
+                } else {
+                    showErrorAlert(res.data.message);
+                }
+            } catch (error: any) {
+                showErrorAlert(error.message);
             }
-        } catch (error: any) {
-            showErrorAlert(error.message);
+        } else {
+            const { name, email, password } = values;
+            try {
+                const res: any = await promiseDispatch(dispatch, {
+                    type: userActions.ADD_USER,
+                    name, email, password
+                });
+                if (res && res.data.code === 200) {
+                    showSuccessAlert(res.data.message);
+                } else {
+                    showErrorAlert(res.data.message);
+                }
+            } catch (error: any) {
+                showErrorAlert(error.message);
+            }
         }
+
     }
     const handleConfirm = () => {
         setSuccessAlert("");
         setLoaded(false);
         setModal_add(false);
-        dispatch({ type: userActions.FETCH_USERS })
+        setPage(1);
+        dispatch({ type: userActions.FETCH_USERS, page, sizePerPage })
     };
     const toggle_del = async (item) => {
         try {
             const res: any = await promiseDispatch(dispatch, {
                 type: userActions.DEL_USER,
-                delId:item.id
+                delId: item.id
             });
             if (res && res.data.code === 200) {
                 showSuccessAlert(res.data.message);
@@ -191,6 +218,14 @@ const UserList = () => {
             showErrorAlert(error.message);
         }
     }
+    const handleChange = (e) => {
+        const targetName = e.target.name;
+        const targetValue = e.target.value;
+        if (targetName === "name") {
+            setName(targetValue);
+        }
+    }
+
     if (!loaded) {
         return <PageLoadingView />;
     }
@@ -251,7 +286,7 @@ const UserList = () => {
                     }}
                 >
                     <div className="modal-header">
-                        <h5 className="modal-title" id="staticBackdropLabel">New User</h5>
+                        <h5 className="modal-title" id="staticBackdropLabel">{isEdit ? "Update User" : "New User"}</h5>
                         <button type="button" className="btn-close"
                             onClick={() => {
                                 setModal_add(false)
@@ -259,33 +294,26 @@ const UserList = () => {
                     </div>
                     <Form onSubmit={(values) => { handleValidSubmit(values) }}
                         initialValues={{
-                            name: '',
-                            email: '',
+                            name: isEdit ? user.name : '',
+                            email: isEdit ? user.email : '',
                             password: '',
                         }}
                         validationSchema={yup.object().shape({
                             name: yup
                                 .string()
-                                .isRequired(true, 'Email is Required.'),
+                                .isRequired(true, 'Name is Required.'),
                             email: yup
                                 .string()
-                                .isRequired(true, 'Email is Required.'),
-                            // .matches(/^\d{8}$/, 'Member ID must be 8 digits.'),
-                            password: yup
-                                .string()
-                                .isRequired(true, 'Password is Required.')
-                            // .matches(
-                            // 	/^\d{5}(?:-\d{4})?$/,
-                            // 	'Valid Zip Code Formats: 12345 or 12345-6789'
-                            // ),
+                                .isRequired(true, 'Email is Required.')
+                                .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, 'Invalid email address.'),
+                            password: yup.string()
+                                .isRequired(isEdit ? false : true, 'Password is Required.')
                         })}
                     >
                         <div className="modal-body">
-
-
-                            <Field name="name" type="text" label="Name" />
-                            <Field name="email" type="text" label="Email" />
-                            <Field name="password" type="text" label="password" />
+                            <Field name="name" type="text" onChange={(e) => handleChange(e)} label="Name" />
+                            <Field name="email" type="text" readOnly={isEdit} label="Email" />
+                            {isEdit ? "" : <Field name="password" type="password" label="password" />}
 
                         </div>
                         <div className="modal-footer">
@@ -297,20 +325,24 @@ const UserList = () => {
                     </Form>
                 </Modal>
             </div>
-            {successAlert !== "" ? (
-                <SweetAlert
-                    success
-                    title={successAlert}
-                    // onConfirm={() => {
-                    //   setSuccessAlert("");
-                    //   history.push("/user");
-                    // }}
-                    onConfirm={handleConfirm}
-                />
-            ) : null}
-            {errAlert !== "" ? (
-                <SweetAlert error title={errAlert} onConfirm={() => setErrAlert("")} />
-            ) : null}
+            {
+                successAlert !== "" ? (
+                    <SweetAlert
+                        success
+                        title={successAlert}
+                        // onConfirm={() => {
+                        //   setSuccessAlert("");
+                        //   history.push("/user");
+                        // }}
+                        onConfirm={handleConfirm}
+                    />
+                ) : null
+            }
+            {
+                errAlert !== "" ? (
+                    <SweetAlert error title={errAlert} onConfirm={() => setErrAlert("")} />
+                ) : null
+            }
         </React.Fragment >
     )
 }

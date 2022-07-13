@@ -9,11 +9,11 @@ import { loginFailed, loginSuccess } from "./login.slice";
 function* login(payload: any) {
 
     const { email, password } = payload;
-    console.log(email, password);
-
     try {
         const response: any = yield call(API.auth.login, email, password);
+        console.log(response);
         if (response.data.code === 200) {
+            localStorage.setItem('authId', response.data.id)
             yield put(loginSuccess(response));
             history.push('/welcome');
         } else {

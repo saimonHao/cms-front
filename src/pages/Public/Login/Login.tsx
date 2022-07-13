@@ -19,7 +19,6 @@ const Login = (props): JSX.Element => {
 
 	const dispatch = useAppDispatch();
 	const error = useAppSelector(state => state.login.error)
-	console.log(error);
 	const history = useHistory();
 	const handleValidSubmit = (values) => {
 		const { email, password } = values;
