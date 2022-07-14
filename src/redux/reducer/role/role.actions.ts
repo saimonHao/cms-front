@@ -1,0 +1,4 @@
+export const roleActions = {
+    FETCH_ROLE_DATA: "FETCH_ROLE_DATA",
+    FETCH_ROLE_SUCCESSED: "FETCH_ROLE_SUCCESSED",
+}

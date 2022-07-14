@@ -257,7 +257,7 @@ const UserList = () => {
                                                     onClick={handleAddNew}
                                                 >
                                                     <i className="mdi mdi-plus me-1" />
-                                                    Add New
+                                                    Add User
                                                 </Button>
                                             </div>
                                         </Col>
