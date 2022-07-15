@@ -16,6 +16,8 @@ import * as yup from 'yup';
 import '@availity/yup';
 import PageLoadingView from "components/PageLoadingView/PageLoadingView";
 import { promiseDispatch } from "utils/commonRedux";
+import stringInArray from "utils/stringInArray";
+import { roleActions } from "redux/reducer/role/role.actions";
 
 const UserList = () => {
     const dispatch = useAppDispatch();
@@ -24,6 +26,8 @@ const UserList = () => {
         total: state.user.total,
         error: state.user.error
     }));
+    const roles = useAppSelector(state => state.role.roles)
+
     const [userData, setUserData] = useState([]);
     const [totalCount, setTotalCount] = useState(0);
     const [page, setPage] = useState(1);
@@ -42,12 +46,14 @@ const UserList = () => {
     const [user, setUser] = useState<any>({});
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [roleName, setRoleName] = useState<any>([]);
 
 
 
     useEffect(() => {
         setLoaded(false)
-        dispatch({ type: userActions.FETCH_USERS, page, sizePerPage, searchKey })
+        dispatch({ type: userActions.FETCH_USERS, page, sizePerPage, searchKey });
+        dispatch({ type: roleActions.FETCH_ROLE_DATA, page: 1, sizePerPage: 100 })
     }, [dispatch, page, sizePerPage, searchKey])
 
     useEffect(() => {
@@ -107,7 +113,7 @@ const UserList = () => {
         dataField: 'id',
         text: 'Id',
         sort: true,
-        hidden:true,
+        hidden: true,
         onSort: (field, order) => {
             setSortOrder(order);
             setSortField(field);
@@ -151,6 +157,13 @@ const UserList = () => {
         setUser(item);
         setIsEdit(true);
         setModal_add(!modal_add)
+        // let roleNameArr: any = Object.values(user.roles).join(",");
+        // if (roleNameArr.length > 0) {
+        //   setRoleName(roleNameArr.split(","));
+        // } else {
+        //   setRoleName([]);
+        // }
+        // setRoleName([]);
     }
     const toggle_add = () => {
         setIsEdit(false);
@@ -163,6 +176,7 @@ const UserList = () => {
         setErrAlert(msg);
     }
     const handleValidSubmit = async (values) => {
+        // console.log(roleName);
         if (isEdit) {
             try {
                 const res: any = await promiseDispatch(dispatch, {
@@ -225,6 +239,22 @@ const UserList = () => {
             setName(targetValue);
         }
     }
+    const handleCheckBox = (name, roleid) => {
+        if (roleName.length > 0) {
+            if (stringInArray(roleName, name) === false) {
+                roleName.push(name);
+            } else {
+                let index = stringInArray(roleName, name);
+                if (index > -1) {
+                    roleName.splice(index, 1);
+                }
+            }
+        } else {
+            roleName.push(name);
+        }
+        // handleSetRoleName(roleName);
+        setRoleName(roleName);
+    };
 
     if (!loaded) {
         return <PageLoadingView />;
@@ -284,6 +314,8 @@ const UserList = () => {
                     toggle={() => {
                         toggle_add()
                     }}
+                    size="lg"
+                // centered={true}
                 >
                     <div className="modal-header">
                         <h5 className="modal-title" id="staticBackdropLabel">{isEdit ? "Update User" : "New User"}</h5>
@@ -314,7 +346,41 @@ const UserList = () => {
                             <Field name="name" type="text" onChange={(e) => handleChange(e)} label="Name" />
                             <Field name="email" type="text" readOnly={isEdit} label="Email" />
                             {isEdit ? "" : <Field name="password" type="password" label="password" />}
-
+                            <label className="col-md-2 col-form-label">
+                                Select Roles
+                            </label>
+                            <div
+                                className="col-md-10"
+                                style={{ paddingLeft: 0, marginTop: 8.6 }}
+                            >
+                                {roles &&
+                                    roles.map((item: any, key) => (
+                                        < div
+                                            key={"_roleCheckBox_" + key}
+                                            className="form-check mb-3"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                className="form-check-input"
+                                                id={"_roleCheckBox_" + key}
+                                                name={item.roleName}
+                                                defaultValue=""
+                                                onChange={() => {
+                                                    handleCheckBox(item.roleName, item.id);
+                                                }}
+                                                defaultChecked={
+                                                    stringInArray(roleName, item.roleName) !== false
+                                                }
+                                            />
+                                            <label
+                                                className="form-check-label"
+                                                htmlFor={"_roleCheckBox_" + key}
+                                            >
+                                                {item.roleName}
+                                            </label>
+                                        </div>
+                                    ))}
+                            </div>
                         </div>
                         <div className="modal-footer">
                             <button type="button" className="btn btn-light" onClick={() => {

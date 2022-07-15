@@ -44,9 +44,9 @@ function* delUser(payload) {
     }
 }
 function* updateUser(payload) {
-    const { name, upId, callback } = payload;
+    const { name, upId, roleNames, callback } = payload;
     try {
-        const res = yield call(API.user.updateUser, { name, upId });
+        const res = yield call(API.user.updateUser, { name, upId, roleNames });
         if (res.data.code === 200) {
             callback && callback(res);
             // yield put(addUserSuccessed(res));

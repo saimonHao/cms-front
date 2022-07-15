@@ -11,9 +11,14 @@ const roleSlice = createSlice({
     initialState,
     reducers: {
         fetchRoleSuccessed: (state, action) => {
-            console.log(action.payload.data);
             state.roles = action.payload.data.roles;
             state.total = action.payload.data.total;
+        },
+        createRoleSuccessed: (state, action) => {
+            return {
+                ...state,
+                action
+            }
         }
     }
 });

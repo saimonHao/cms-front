@@ -11,4 +11,7 @@ export const APIS = {
     updateUser: concatWithHost(env.apiHost, `/cms/api/v1.0/user/update`),
     //role
     fetchRoleData: (params) => concatWithHost(env.apiHost, `/cms/api/v1.0/role/list?${params}`),
+    createRole: concatWithHost(env.apiHost, `/cms/api/v1.0/role/create`),
+    updateRole: concatWithHost(env.apiHost, `/cms/api/v1.0/role/update`),
+    delRole: (delId) => concatWithHost(env.apiHost, `/cms/api/v1.0/role/${delId}`)
 }
