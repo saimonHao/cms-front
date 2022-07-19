@@ -34,7 +34,7 @@ const UserList = () => {
     const [page, setPage] = useState(1);
     const [sizePerPage, setSizePerPage] = useState(10);
     const [sortField, setSortField] = useState('id');
-    const [sortOrder, setSortOrder] = useState('desc');
+    const [sortOrder, setSortOrder] = useState('asc');
     const [loaded, setLoaded] = useState(false);
 
     const [searchKey, setSearchKey] = useState("");
@@ -157,7 +157,7 @@ const UserList = () => {
         setUser(item);
         setIsEdit(true);
         setModal_add(!modal_add);
-        const roleNameArr = item.roles === "" ? [] : item.roles.split(",");
+        const roleNameArr = item.roles === "" || item.roles === null ? [] : item.roles.split(",");
         if (roleNameArr.length > 0) {
             setRoleName(roleNameArr);
         } else {
@@ -176,6 +176,7 @@ const UserList = () => {
         setErrAlert(msg);
     }
     const handleValidSubmit = async (values) => {
+        console.log(roleName);
         if (isEdit) {
             try {
                 const [uRes, rRes]: any = await Promise.all([
