@@ -18,6 +18,7 @@ import PageLoadingView from "components/PageLoadingView/PageLoadingView";
 import { promiseDispatch } from "utils/commonRedux";
 import stringInArray from "utils/stringInArray";
 import { roleActions } from "redux/reducer/role/role.actions";
+import { isTemplateTail } from "typescript";
 
 const UserList = () => {
     const dispatch = useAppDispatch();
@@ -153,20 +154,19 @@ const UserList = () => {
         toggle_add();
     }
     const toggle_edit = (item) => {
-        console.log(item);
         setUser(item);
         setIsEdit(true);
-        setModal_add(!modal_add)
-        // let roleNameArr: any = Object.values(user.roles).join(",");
-        // if (roleNameArr.length > 0) {
-        //   setRoleName(roleNameArr.split(","));
-        // } else {
-        //   setRoleName([]);
-        // }
-        // setRoleName([]);
+        setModal_add(!modal_add);
+        const roleNameArr = item.roles === "" ? [] : item.roles.split(",");
+        if (roleNameArr.length > 0) {
+            setRoleName(roleNameArr);
+        } else {
+            setRoleName([]);
+        }
     }
     const toggle_add = () => {
         setIsEdit(false);
+        setRoleName([]);
         setModal_add(!modal_add)
     }
     const showSuccessAlert = (msg) => {
@@ -176,18 +176,25 @@ const UserList = () => {
         setErrAlert(msg);
     }
     const handleValidSubmit = async (values) => {
-        // console.log(roleName);
         if (isEdit) {
             try {
-                const res: any = await promiseDispatch(dispatch, {
-                    type: userActions.UPDATE_USER,
-                    name,
-                    upId: user.id
-                });
-                if (res && res.data.code === 200) {
-                    showSuccessAlert(res.data.message);
+                const [uRes, rRes]: any = await Promise.all([
+                    promiseDispatch(dispatch, {
+                        type: userActions.UPDATE_USER,
+                        name: values.name,
+                        roleNames: roleName,
+                        upId: user.id
+                    }),
+                    promiseDispatch(dispatch, {
+                        type: roleActions.UPDATE_USER_ROLE,
+                        uid: user.id,
+                        roleNames: roleName
+                    }),
+                ])
+                if (rRes && rRes.data.code === 200) {
+                    showSuccessAlert(rRes.data.message);
                 } else {
-                    showErrorAlert(res.data.message);
+                    showErrorAlert(rRes.data.message);
                 }
             } catch (error: any) {
                 showErrorAlert(error.message);
@@ -197,9 +204,15 @@ const UserList = () => {
             try {
                 const res: any = await promiseDispatch(dispatch, {
                     type: userActions.ADD_USER,
-                    name, email, password
+                    name, email, password,
+                    roleNames: roleName
                 });
                 if (res && res.data.code === 200) {
+                    await promiseDispatch(dispatch, {
+                        type: roleActions.UPDATE_USER_ROLE,
+                        uid: res.data.user.id,
+                        roleNames: roleName
+                    });
                     showSuccessAlert(res.data.message);
                 } else {
                     showErrorAlert(res.data.message);
@@ -208,7 +221,6 @@ const UserList = () => {
                 showErrorAlert(error.message);
             }
         }
-
     }
     const handleConfirm = () => {
         setSuccessAlert("");
@@ -252,7 +264,6 @@ const UserList = () => {
         } else {
             roleName.push(name);
         }
-        // handleSetRoleName(roleName);
         setRoleName(roleName);
     };
 

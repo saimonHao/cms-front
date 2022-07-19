@@ -6,3 +6,4 @@ export const fetchRoleData = async (params) => await get(APIS.fetchRoleData(pars
 export const createRole = async (params) => await post(APIS.createRole, params);
 export const updateRole = async (params) => await put(APIS.updateRole, params);
 export const delRole = async (delId) => await del(APIS.delRole(delId));
+export const updateUserRole = async (params) => await put(APIS.updateUserRole, params);

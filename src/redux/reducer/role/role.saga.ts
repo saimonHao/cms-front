@@ -43,10 +43,21 @@ function* deleteRole(payload) {
         return error;
     }
 }
+function* updateUserRole(payload) {
+    const { uid, roleNames, callback } = payload;
+    try {
+        const res = yield call(API.role.updateUserRole, { uid, roleNames });
+        callback && callback(res);
+        return res;
+    } catch (error) {
+        return error;
+    }
+}
 
 export default function* roleSaga() {
     yield takeEvery(roleActions.FETCH_ROLE_DATA, fetchRoleData);
     yield takeEvery(roleActions.CREATE_ROLE, createRole);
     yield takeEvery(roleActions.UPDATE_ROLE, updateRole);
     yield takeEvery(roleActions.DELETE_ROLE, deleteRole);
+    yield takeEvery(roleActions.UPDATE_USER_ROLE, updateUserRole)
 }
